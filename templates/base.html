@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Thư viện</title>
+    {% from 'bootstrap5/utils.html' import render_messages %}
+    {% from 'bootstrap5/nav.html' import render_nav_item %}
+    {{ bootstrap.load_css() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">Thư viện</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    {{ render_nav_item('index', 'Trang chủ') }}
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role == 'admin' %}
+                            {{ render_nav_item('index', 'Quản lý Sách') }} {# Placeholder #}
+                            {{ render_nav_item('index', 'Quản lý Người dùng') }} {# Placeholder #}
+                        {% endif %}
+                        {{ render_nav_item('logout', 'Đăng xuất') }}
+                    {% else %}
+                        {{ render_nav_item('login', 'Đăng nhập') }}
+                        {{ render_nav_item('register', 'Đăng ký') }}
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        {{ render_messages() }}
+        {% block content %}{% endblock %}
+    </div>
+    {{ bootstrap.load_js() }}
+</body>
+</html>

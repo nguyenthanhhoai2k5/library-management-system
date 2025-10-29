@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="jumbotron text-center">
+        <h1 class="display-4">Chào mừng đến với Thư viện</h1>
+        <p class="lead">Ứng dụng quản lý mượn/trả sách hiện đại.</p>
+        <hr class="my-4">
+        {% if current_user.is_authenticated %}
+            <p>Xin chào, <strong>{{ current_user.username }}</strong>! Bạn là <strong>{{ current_user.role }}</strong>.</p>
+            <a class="btn btn-primary btn-lg" href="{{ url_for('logout') }}" role="button">Đăng xuất</a>
+        {% else %}
+            <p>Vui lòng đăng nhập để sử dụng hệ thống.</p>
+            <a class="btn btn-success btn-lg" href="{{ url_for('login') }}" role="button">Đăng nhập</a>
+            <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('register') }}" role="button">Đăng ký</a>
+        {% endif %}
+    </div>
+{% endblock %}
