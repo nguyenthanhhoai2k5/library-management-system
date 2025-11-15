@@ -1,0 +1,161 @@
+<!-- templates/books/detail_modal.html -->
+<div class="modal fade" id="bookModal{{ modal_book.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background-color: #d7d7d7; color: black; border-radius: 5px;">
+            <div class="modal-header d-flex justify-content-center">
+                <h2 class="text-dark">Thông Tin Chi Tiết Sách</h2>
+                <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        {% if modal_book.cover_image %}
+                        <!--Đây là bìa sách-->
+                            <img src="{{ url_for('static', filename=modal_book.cover_image) }}" 
+                                class="img-fluid rounded" style="height: 400px; width: 300px;" alt="{{ modal_book.title }}">
+                        {% else %}
+                            <div class="bg-light border rounded d-flex align-items-center justify-content-center" style="height: 300px;">
+                                <span class="text-muted">Không có ảnh bìa</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <!--Thông tin sách--> 
+                        <p><strong >Tên Sách:</strong> {{ modal_book.title }}</p>
+                        <p><strong >Tác giả:</strong> {{ modal_book.author }}</p>
+                        <p><strong >Thể loại:</strong> {{ modal_book.genre or '—' }}</p>
+                        <p><strong >ISBN:</strong> {{ modal_book.isbn or '—' }}</p>
+                        <p><strong >Còn lại:</strong>
+                            <span class="badge {% if modal_book.available_copies > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ modal_book.available_copies }}
+                            </span>
+                        </p>
+                        {% if modal_book.description %}
+                            <p><strong>Mô tả:</strong><br>{{ modal_book.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                {% if current_user.role == 'user' %}
+                    {% if modal_book.available_copies > 0 %}
+                        <!-- Mở modal Quy Định Mượn Sách -->
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#borrowRulesModal{{ modal_book.id }}" style="border: 2px solid black; background-color: #21C400;">Mượn sách</button>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('reserve_book', book_id=modal_book.id) }}" style="display:inline">
+                            <button type="submit" class="btn btn-outline-primary">Đặt trước</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+                <!--Sửa lại cả user và admin điều thấy nút hủy, Loại bỏ chức năng xóa của admin)-->
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: red;">Hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Quy Định Mượn Sách -->
+<div class="modal fade" id="borrowRulesModal{{ modal_book.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background-color: #ffffff; color: black;">
+            <div class="modal-header d-flex justify-content-center">
+                <h2 class="text-dark">Quy Định Mượn Sách</h2>
+                <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('borrow_request', book_id=modal_book.id) }}">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Họ và Tên</label>
+                            <input type="text" name="full_name" class="form-control" required maxlength="128" value="{{ (current_user.full_name or current_user.username) if current_user.is_authenticated else '' }}">
+                        </div> 
+                        <div class="col-md-6">
+                            <label class="form-label">Số Điện Thoại</label>
+                            <input type="text" name="phone" class="form-control" required maxlength="20">
+                        </div>
+                        <!--Bổ sung trường Giới Tính-->
+                        <div class="col-md-6">
+                            <label class="form-label">Giới Tính</label>
+                            <select name="gender" class="form-select" required>
+                                <option value="" disabled selected>Chọn giới tính</option>
+                                <option value="Nam" {% if current_user.gender == 'Nam' %}selected{% endif %}>Nam</option>
+                                <option value="Nữ" {% if current_user.gender == 'Nữ' %}selected{% endif %}>Nữ</option>
+                                <option value="Khác" {% if current_user.gender == 'Khác' %}selected{% endif %}>Khác</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Địa Chỉ</label>
+                            <input type="text" name="address" class="form-control" required maxlength="256" value="{{ current_user.address if current_user.is_authenticated else '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" required maxlength="120" value="{{ current_user.email if current_user.is_authenticated else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-8">
+                            <label class="form-label">Ngày Trả Sách (dd/MM/yyyy)</label>
+                            <input type="text" id="returnDateText{{ modal_book.id }}" name="return_date" class="form-control" placeholder="vd: 19/11/2025">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Chọn ngày</label>
+                            <input type="date" id="returnDatePicker{{ modal_book.id }}" class="form-control">
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="rules mb-3">
+                        <p>1. Giữ gìn sách cẩn thận, không viết vẽ, làm rách hoặc làm mất sách.</p>
+                        <p>2. Nếu làm hư hỏng hoặc mất sách, phải bồi thường theo giá trị của sách.</p>
+                        <p>3. Trả sách đúng ngày quy định.</p>
+                        <p>4. Mức phạt có thể tính theo số ngày quá hạn: 1.000đ/ngày/cuốn.</p>
+                        <p>5. Không được cho người khác mượn lại sách đã mượn từ thư viện.</p>
+                        <p>6. Không được Copy tài liệu của sách.</p>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="agree" id="agree{{ modal_book.id }}">
+                        <label class="form-check-label" for="agree{{ modal_book.id }}">Tôi đã đọc và đồng ý</label>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background-color: #696969;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color: #E42C2C; border: 2px solid rgb(255, 255, 255);">Hủy</button>
+                    <button type="submit" class="btn btn-primary" style="background-color: #21C400; border: 2px solid rgb(255, 255, 255);">Xác nhận Mượn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Đồng bộ giữa input text dd/MM/yyyy và input[type=date]
+    (function() {
+    const picker = document.getElementById('returnDatePicker{{ modal_book.id }}');
+    const text = document.getElementById('returnDateText{{ modal_book.id }}');
+        if (!picker || !text) return;
+
+        // when picker changes, update text in dd/MM/yyyy
+        picker.addEventListener('change', function() {
+            if (!this.value) return;
+            const parts = this.value.split('-'); // yyyy-mm-dd
+            if (parts.length === 3) {
+                const formatted = parts[2] + '/' + parts[1] + '/' + parts[0];
+                text.value = formatted;
+            }
+        });
+
+        // when text changes, try to parse dd/MM/yyyy and set picker
+        text.addEventListener('change', function() {
+            const v = this.value.trim();
+            const m = v.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (m) {
+                const iso = m[3] + '-' + m[2] + '-' + m[1];
+                picker.value = iso;
+            }
+        });
+    })();
+</script>

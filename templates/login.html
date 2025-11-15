@@ -1,7 +1,18 @@
 {% extends 'base.html' %}
 {% from 'bootstrap5/form.html' import render_form %}
 
+{# Include public nav at the top #}
+{% include 'nav.html' %}
+
 {% block content %}
-    <h2>Đăng nhập</h2>
-    {{ render_form(form) }}
+
+<div class="auth-page" style="background: linear-gradient(180deg, #FF33FF, rgb(75,0,130), #6666FF); min-height: 100vh; display:flex; align-items:center; justify-content:center; padding:20px 0; border: 2px solid #686868; border-radius: 5px;">
+    <div class="auth-form" style="background: rgba(255,255,255,0.5); padding: 30px 36px; border-radius: 8px; width:100%; max-width:520px; text-align:center; border: 2px solid #838383; border-radius: 5px;">
+        <h2 class="mb-3">Đăng Nhập</h2>
+        <!--Sửa lại làm chi nút đăng nhập bằng kích giống như ô nhập liệu textbox-->
+        <form method="POST" novalidate>
+            {{ render_form(form) }}
+        </form>
+    </div>
+</div>
 {% endblock %}

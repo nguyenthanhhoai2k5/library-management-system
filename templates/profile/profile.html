@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Profile - {{ current_user.username }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        width: 100%; 
+        height: auto;
+    }
+    #edit-profile-button {
+        color: black;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+</style>
+
+<!-- HEADER -->
+<div class="dashboard">
+    <div class="profile-header" style="background-color: rgb(255, 255, 255); border: 2px solid #838383; border-radius: 5px; padding: 30px;">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <table class="khung-profile"> 
+                    <tr style="width:100%">
+                        <td style="width: 0px;"></td>
+                        <td id="cover-image" style="width: 100%; height: auto;">
+                            <!--ảnh bìa tại đây , cho độ rộng bằng độ rộng của form--> 
+                            <img src="{{ url_for('static', filename='uploads/covers/default-cover.jpg') }}" class="img-fluid rounded" style="border: 1px solid #838383; border-radius: 3px;">
+                        </td>
+                        <td style="width: 0px;"></td>
+                    </tr>
+                    <tr class="hang-2">
+                        <td id="avatar-image">
+                            <!--ảnh avatar tại đây--> 
+                            <img src="{{ url_for('static', filename='uploads/avatars/default-avatar.png') }}" 
+                                    class="rounded-circle" width="200" height="200" alt="Avatar" style="margin-right: 20px; border: 2px solid #838383;">
+                        </td>
+                        <td>
+                            <h1><strong id="username">{{ current_user.username }}</strong></h1>
+                        </td>
+                        <td id="edit-profile-button"> 
+                            <!--Nút chỉnh sửa tại đây-->
+                            <!--Thêm ảnh tại img/pen.png-->
+                            <button data-bs-toggle="modal" data-bs-target="#editProfileModal" style="width: 250px; height: 40px; border: 1px solid #838383; border-radius: 5px;"><img src="{{ url_for('static', filename='img/pen.png') }}" alt="Edit" style="height: 30px; width: 30px; border: none;"> Chỉnh Sửa Trang Cá Nhân</button>
+                        </td>
+                    </tr>
+                </table>
+                <hr> <!--dấu gạch ngang-->
+            </div>
+        </div>
+    </div>
+    <hr>
+
+    <!-- COVER + AVATAR -->
+
+    <!-- CONTENT -->
+    <div class="profile-content" style="background-color: rgb(255, 255, 255); border: 2px solid #838383; border-radius: 5px; padding: 30px;">
+        <div class="container">
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#about">Giới Thiệu Bản Thân</a>
+                </li>
+                {% if current_user.role == 'user' %}
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#borrowed">Sách Đã Mượn</a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <div class="tab-content">
+                <!-- TAB GIỚI THIỆU -->
+                <div class="tab-pane fade show active" id="about">
+                    <p><strong>Họ và Tên:</strong> {{ current_user.full_name or 'Chưa có thông tin' }}</p>
+                    <p><strong>Giới Tính:</strong> {{ current_user.gender or 'Chưa có thông tin' }}</p> <!--Đã bổ sung trường Giới Tính-->
+                    <p><strong>Ngày Sinh:</strong> {{ current_user.birth_date.strftime('%d/%m/%Y') if current_user.birth_date else 'Chưa có thông tin' }}</p>
+                    <p><strong>Username:</strong> {{ current_user.username }}</p>
+                    <p><strong>Email:</strong> {{ current_user.email }}</p>
+                    <p><strong>Địa Chỉ:</strong> {{ current_user.address or 'Chưa có thông tin' }}</p>
+                    <p><strong>Sở Thích:</strong> {{ current_user.hobbies or 'Chưa có thông tin' }}</p>
+                </div>
+
+                <!-- TAB SÁCH ĐÃ MƯỢN -->
+                {% if current_user.role == 'user' %}
+                <div class="tab-pane fade" id="borrowed">
+                    <table class="table table-striped"> 
+                        <thead>
+                            <tr>
+                                <th style="background-color: #838383; color: white;">Tên Sách</th>
+                                <th style="background-color: #838383; color: white;">Thể Loại</th>
+                                <th style="background-color: #838383; color: white;">Tác Giả</th>
+                                <th style="background-color: #838383; color: white;">Ngày Mượn</th>
+                                <th style="background-color: #838383; color: white;">Ngày Trả</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in borrows %}
+                            <tr>
+                                <td style="background-color: #ffffff; color: black;">{{ b.book.title }}</td>
+                                <td style="background-color: #ffffff; color: black;">{{ b.book.genre or '-' }}</td>
+                                <td style="background-color: #ffffff; color: black;">{{ b.book.author }}</td>
+                                <td style="background-color: #ffffff; color: black;">{{ b.due_date.strftime('%d/%m/%Y') }}</td>
+                                <td style="background-color: #ffffff; color: black;">{{ b.return_date.strftime('%d/%m/%Y') if b.return_date else 'Chưa trả' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center">Chưa mượn sách nào</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+{% include 'profile/edit_modal.html' %}
+{% endblock %}

@@ -1,17 +1,18 @@
 {% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{# Include public nav at the top #}
+{% include 'nav.html' %}
 
 {% block content %}
-    <div class="jumbotron text-center">
-        <h1 class="display-4">Chào mừng đến với Thư viện</h1>
-        <p class="lead">Ứng dụng quản lý mượn/trả sách hiện đại.</p>
-        <hr class="my-4">
-        {% if current_user.is_authenticated %}
-            <p>Xin chào, <strong>{{ current_user.username }}</strong>! Bạn là <strong>{{ current_user.role }}</strong>.</p>
-            <a class="btn btn-primary btn-lg" href="{{ url_for('logout') }}" role="button">Đăng xuất</a>
-        {% else %}
-            <p>Vui lòng đăng nhập để sử dụng hệ thống.</p>
-            <a class="btn btn-success btn-lg" href="{{ url_for('login') }}" role="button">Đăng nhập</a>
-            <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('register') }}" role="button">Đăng ký</a>
-        {% endif %}
+<!--Sửa thành background-color có 3 màu là 180deg, #FF33FF, rgb(75,0,130), #6666FF theo hướng ngang từ trên xuống -->
+
+<div class="auth-page" style="background: linear-gradient(180deg, #FF33FF, rgb(75,0,130), #6666FF); min-height: 100vh; display:flex; align-items:center; justify-content:center; padding:20px 0; border: 2px solid #686868; border-radius: 5px; ">
+    <div class="auth-form" style="background: rgba(255,255,255,0.5); padding: 30px 36px; border-radius: 8px; width:100%; max-width:520px; text-align:center; border: 2px solid #838383; border-radius: 5px;">
+        <h2 class="mb-3">Đăng Ký</h2>
+        <form method="POST" novalidate>
+            {{ render_form(form) }}
+        </form>
     </div>
+</div>
 {% endblock %}

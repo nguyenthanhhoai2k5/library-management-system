@@ -1,0 +1,44 @@
+{% from "_formhelpers.html" import render_field %}
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border: 2px solid #838383;">
+            <form method="POST" action="{{ url_for('edit_profile') }}">
+                {{ form.hidden_tag() }}
+                <div class="modal-header bg-danger text-white">
+                    <!--Làm cho h3 nằm giữa-->
+                    <!--Thêm ảnh tại img/pen.png-->
+                    <h3 class="modal-title" style="text-align: center; width: 100%;"><img src="{{ url_for('static', filename='img/pen.png') }}" alt="Edit" style="height: 50px; width: 50px; border: none;">Chỉnh sửa trang cá nhân</h3>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!---Anh avata và ảnh bìa hiển thị không cần cập nhật--> 
+                    <!--Anh avatar hiển thị--> 
+                    <table>
+                        <tr>
+                            <!--Anh avatar hiển thị tại đây--> 
+                            <td>
+                                <img src="{{ url_for('static', filename='uploads/avatars/default-avatar.png') }}" class="img-fluid rounded mb-2" style="max-height: 200px; border: 2px solid #838383; border-radius: 50%; margin-right: 200px;">
+                            </td>
+                            <!--ảnh bìa hiển thị tại đây, cho hình ảnh nằm xát bên phải--> 
+                            <td>
+                                <img src="{{ url_for('static', filename='uploads/covers/default-cover.jpg') }}" class="img-fluid rounded mb-2" style="max-height: 300px; text-align: right;">
+                            </td>
+                        </tr>
+                    </table>
+                    <hr>
+                    <h4 style="background-color: #838383; color: white; padding: 10px; margin-bottom: 10px; border-radius: 5px;">Chỉnh Sửa Thông Tin Cá Nhân</h4>
+                    {{ render_field(form.full_name) }}
+                    {{ render_field(form.gender) }} <!--Đã bổ sung trường Giới Tính-->
+                    {{ render_field(form.birth_date) }}
+                    {{ render_field(form.address) }}
+                    {{ render_field(form.hobbies, rows=4) }}
+        
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    {{ form.submit(class="btn btn-danger") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

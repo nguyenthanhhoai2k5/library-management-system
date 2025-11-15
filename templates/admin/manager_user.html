@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .table-responsive {
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table thead th {
+        background-color: #363a3f;
+        color: white;
+        font-weight: 600;
+        border: none;
+        padding: 12px;
+    }
+    
+    .table tbody tr {
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .btn-add-user {
+        margin-bottom: 20px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+    
+    .modal-header {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .nav-tabs .nav-link.active {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+    }
+    
+    .nav-tabs .nav-link {
+        color: #495057;
+    }
+    
+    .detail-table {
+        width: 100%;
+    }
+    
+    .detail-table tr td:first-child {
+        font-weight: 600;
+        background-color: #f8f9fa;
+        width: 35%;
+        padding: 10px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .detail-table tr td:last-child {
+        padding: 10px;
+        border: 1px solid #dee2e6;
+    }
+</style>
+
+<div style="background: #ebebeb; border: 2px solid #838383; border-radius: 5px; padding: 10px;" > <!----->
+
+    <h1 class="mb-4" style="font-weight: normal; background-color: #8df7cc; padding: 5px; border: 2px solid rgb(255, 255, 255); border-radius: 5px;">Quản Lý Tài Khoản Người Dùng</h1>
+    <hr>
+    <!-- Nút Thêm User -->
+    <div class="btn-add-user">
+        <a href="{{ url_for('register') }}" class="btn btn-success" style="border: 2px solid black;">
+            <i class="fas fa-plus"></i> Thêm User
+        </a>
+    </div>
+    
+    <!-- Bảng Danh Sách Người Dùng -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th style="background-color: #cccccc;" >STT</th>
+                    <th style="background-color: #cccccc;">Họ và Tên</th>
+                    <th style="background-color: #cccccc;">Email</th>
+                    <th style="background-color: #cccccc;">Username</th>
+                    <th style="background-color: #cccccc;">Vai Trò</th>
+                    <th style="background-color: #cccccc;">Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if users %}
+                    {% for user in users %}
+                    <tr onclick="openDetailModal({{ user.id }})">   
+                        <td>{{ loop.index }}</td>
+                        <td>{{ user.full_name or user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>
+                            {% if user.role == 'admin' %}
+                                <span class="badge bg-danger">Admin</span>
+                            {% else %}
+                                <span class="badge bg-primary">User</span>
+                            {% endif %}
+                        </td>
+                        <td class="action-buttons" onclick="event.stopPropagation();">
+                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <!-- Modal Xác Nhận Xóa -->
+                    <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">Xác Nhận Xóa Tài Khoản</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    {% set unreturned_count = user.borrows|selectattr('return_date', 'none')|list|length %}
+                                    {% if unreturned_count > 0 %}
+                                        <div class="alert alert-danger" role="alert">
+                                            <strong>⚠️ Không thể xóa!</strong>
+                                            <p class="mb-0">User <strong>{{ user.username }}</strong> còn <strong>{{ unreturned_count }}</strong> sách chưa được trả:</p>
+                                            <ul class="mt-2 mb-0">
+                                                {% for borrow in user.borrows %}
+                                                    {% if not borrow.return_date %}
+                                                        <li>{{ borrow.book.title }} (Mượn ngày: {{ borrow.borrow_date.strftime('%d/%m/%Y') }})</li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% else %}
+                                        <p>Bạn có chắc muốn xóa tài khoản người dùng <strong>{{ user.username }}</strong>?</p>
+                                        <p class="text-danger"><strong>Lưu ý:</strong> Hành động này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan.</p>
+                                    {% endif %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    {% if unreturned_count == 0 %}
+                                        <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}" style="display:inline;">
+                                            <button type="submit" class="btn btn-danger">Xóa</button>
+                                        </form>
+                                    {% else %}
+                                        <button type="button" class="btn btn-danger" disabled title="Phải yêu cầu user trả sách trước">Xóa (Không Khả Dụng)</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">Không có người dùng nào</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Thông Tin Chi Tiết Người Dùng -->
+{% if users %}
+    {% for user in users %}
+    <div class="modal fade" id="userDetailModal{{ user.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thông Tin Chi Tiết - {{ user.username }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-login-{{ user.id }}" data-bs-toggle="tab" data-bs-target="#content-login-{{ user.id }}" type="button" role="tab">
+                                Thông Tin Đăng Nhập & Xác Thực
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-info-{{ user.id }}" data-bs-toggle="tab" data-bs-target="#content-info-{{ user.id }}" type="button" role="tab">
+                                Thông Tin Người Dùng
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-books-{{ user.id }}" data-bs-toggle="tab" data-bs-target="#content-books-{{ user.id }}" type="button" role="tab">
+                                Sách Đã Mượn
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Tab 1: Thông Tin Đăng Nhập & Xác Thực -->
+                        <div class="tab-pane fade show active" id="content-login-{{ user.id }}" role="tabpanel">
+                            <table class="detail-table">
+                                <tr>
+                                    <td>User ID:</td>
+                                    <td>{{ user.id }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Username:</td>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Password:</td>
+                                    <td><span class="text-muted">••••••••</span> (Mã hóa)</td>
+                                </tr>
+                                <tr>
+                                    <td>Vai Trò:</td>
+                                    <td>
+                                        {% if user.role == 'admin' %}
+                                            <span class="badge bg-danger">Admin</span>
+                                        {% else %}
+                                            <span class="badge bg-primary">User</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <!-- Tab 2: Thông Tin Người Dùng -->
+                        <div class="tab-pane fade" id="content-info-{{ user.id }}" role="tabpanel">
+                            <table class="detail-table">
+                                <tr>
+                                    <td>Full Name:</td>
+                                    <td>{{ user.full_name or 'Chưa cập nhật' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Gender:</td>
+                                    <td>{{ user.gender or 'Chưa cập nhật' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Email:</td>
+                                    <td>{{ user.email }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Phone Number:</td>
+                                    <td><span class="text-muted">Chưa cập nhật</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Address:</td>
+                                    <td>{{ user.address or 'Chưa cập nhật' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Birth Date:</td>
+                                    <td>{{ user.birth_date.strftime('%d/%m/%Y') if user.birth_date else 'Chưa cập nhật' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Hobbies:</td>
+                                    <td>{{ user.hobbies or 'Chưa cập nhật' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <!-- Tab 3: Sách Đã Mượn -->
+                        <div class="tab-pane fade" id="content-books-{{ user.id }}" role="tabpanel">
+                            {% if user.borrows %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead style="background-color: #e9ecef;">
+                                        <tr>
+                                            <th>Tên Sách</th>
+                                            <th>Thể Loại</th>
+                                            <th>Tác Giả</th>
+                                            <th>Ngày Mượn</th>
+                                            <th>Ngày Trả</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for borrow in user.borrows %}
+                                        <tr>
+                                            <td>{{ borrow.book.title }}</td>
+                                            <td>{{ borrow.book.genre or '-' }}</td>
+                                            <td>{{ borrow.book.author }}</td>
+                                            <td>{{ borrow.borrow_date.strftime('%d/%m/%Y') }}</td>
+                                            <td>
+                                                {% if borrow.return_date %}
+                                                    {{ borrow.return_date.strftime('%d/%m/%Y') }}
+                                                {% else %}
+                                                    <span class="badge bg-warning">Chưa trả</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center">Người dùng này chưa mượn sách nào.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<script>
+    function openDetailModal(userId) {
+        const modal = new bootstrap.Modal(document.getElementById('userDetailModal' + userId));
+        modal.show();
+    }
+</script>
+
+{% endblock %}

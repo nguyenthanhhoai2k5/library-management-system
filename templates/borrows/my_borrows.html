@@ -1,0 +1,259 @@
+<!--(User và Admin có thể xem sách đang mượn)-->
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<style>
+/*
+ * CSS tùy chỉnh để đặt ô tìm kiếm và nút tìm kiếm trên cùng một hàng.
+ * Chúng ta sử dụng Flexbox cho form để căn chỉnh.
+ */
+.search-form-inline {
+    display: flex; /* Bật Flexbox */
+    gap: 10px; /* Khoảng cách giữa các thành phần */
+    align-items: center; /* Căn chỉnh theo chiều dọc */
+    max-width: 500px; /* Giới hạn độ rộng của form tìm kiếm để trông gọn gàng hơn */
+}
+
+/* Đảm bảo ô input mở rộng để chiếm không gian còn lại */
+.search-form-inline .form-control {
+    flex-grow: 1;
+}
+
+/* Loại bỏ margin top không cần thiết trên nút (nếu có class mt-2) khi đã dùng flexbox */
+.search-form-inline .btn {
+    /* Đảm bảo nút không bị margin-top: 2px từ class mt-2 gốc */
+    margin-top: 0 !important; 
+}
+</style>
+
+<div class="dashboard">
+<!--Nếu user đăng nhập hiển thị Sách tôi đang mượn , nếu Admin đăng nhập hiển thị Tất cả sách đang mượn -->
+<div class="title-table">
+    {% if current_user.role == 'user' %}
+        <h2>Sách tôi đang mượn</h2>
+    {% elif current_user.role == 'admin' %}
+        <h2>Tất cả sách đang mượn</h2>
+    {% endif %}
+</div>
+<hr>
+<!--Bổ sung thêm tính năng tìm kiếm sách đang mượn để dễ quản lý, admin nhập tên sách cần tìm-->
+<form method="GET" action="{{ url_for('my_borrows') }}" class="mb-3">
+    <input type="text" name="search" placeholder="Tìm kiếm sách đang mượn" class="form-control" value="{{ request.args.get('search', '') }}">
+    <button type="submit" class="btn btn-primary mt-2">Tìm kiếm</button>
+</form>
+{% if borrows %} 
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th style="background-color: #cccccc;">Sách</th>
+                <th style="background-color: #cccccc;">Mượn ngày</th>
+                <th style="background-color: rgb(204, 204, 204);">Hạn trả</th>
+                <th style="background-color: rgb(204, 204, 204);">Trạng thái</th>
+                <th style="background-color: rgb(204, 204, 204);">Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in borrows %}
+                <!--Models tràn thái-->
+                <tr class="{% if b.is_overdue() %}table-danger{% endif %}">
+                    <td><strong>{{ b.book.title }}</strong></td>
+                    <td>{{ b.borrow_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ b.due_date.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        {% if b.return_date %}
+                            <span class="badge bg-success">Đã trả</span>
+                        {% elif b.is_overdue() %}
+                            <span class="badge bg-danger">Quá hạn</span>
+                        {% else %}
+                            <span class="badge bg-warning">Đang mượn</span>
+                        {% endif %}
+                    </td>
+                    <!---Nút Trả sách chỉ hiển thị khi admin đăng nhập bổ sung thêm nút xem chi tiết,  Nút Mượn Lại và Xóa chỉ hiển thị khi user đăng nhập -->
+                    <td class="actions-cell align-middle text-center">
+                        {% if current_user.role == 'admin' %}
+                            <!-- ADMIN: Nút Trả sách và Xem Chi Tiết -->
+                            {% if not b.return_date %}
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    <!-- Nút Trả sách -->
+                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal{{ b.id }}">Trả sách</button>
+                                    <!-- Nút Xem Chi Tiết -->
+                                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal{{ b.id }}">Xem Chi Tiết</button>
+                                </div>
+                            {% else %}
+                                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal{{ b.id }}">Xem Chi Tiết</button>
+                            {% endif %}
+                        {% elif current_user.role == 'user' %}
+                            <!-- USER: Nút Mượn Lại và Xóa (chỉ hiển thị khi sách đã trả) -->
+                            {% if b.return_date %}
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    <!-- Mượn Lại: gửi POST tới route borrow_book -->
+                                    <form method="POST" action="{{ url_for('borrow_book', book_id=b.book.id) }}" style="display:inline">
+                                        <button type="submit" class="btn btn-success btn-sm" {% if b.book.available_copies <= 0 %}disabled title="Không còn bản"{% endif %}>Mượn Lại</button>
+                                    </form>
+
+                                    <!-- Xóa bản ghi mượn (chỉ bản ghi đã trả) -->
+                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ b.id }}">Xóa</button>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+
+            <!-- Modal trả sách (   Sửa lại khi admin đăng nhập mới xác nhận trả sách    )-->
+            <div class="modal fade" id="returnModal{{ b.id }}">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="POST" action="{{ url_for('return_book', borrow_id=b.id) }}">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Xác nhận trả sách</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Bạn có chắc muốn trả sách <strong>"{{ b.book.title }}"</strong>?</p>
+                                {% if b.is_overdue() %}
+                                <div class="alert alert-warning">
+                                    <strong>Phạt trễ hạn: {{ (b.calculate_fine() / 1000)|int }}.000 VNĐ</strong>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-success">Xác nhận trả</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal xóa bản ghi mượn -->
+            <div class="modal fade" id="deleteModal{{ b.id }}">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="POST" action="{{ url_for('delete_borrow', borrow_id=b.id) }}">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Xác nhận xóa bản ghi</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Bạn có chắc muốn xóa bản ghi mượn sách <strong>"{{ b.book.title }}"</strong>?</p>
+                                <!--Dòng chữ màu đỏ--->
+                                <p class="text-muted" style="color: red;">Lưu ý: thao tác này sẽ xóa lịch sử mượn này khỏi hệ thống.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Thông Tin Chi Tiết (dành cho Admin) -->
+            <div class="modal fade" id="detailModal{{ b.id }}">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Thông Tin Chi Tiết</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- 2.1. Thông tin về sách đang mượn -->
+                            <h6 class="text-primary fw-bold mb-3">Thông Tin Về Sách Đang Mượn</h6>
+                            <ul class="list-unstyled ms-3 mb-4">
+                                <li class="mb-2"><strong>Mã sách:</strong> {{ b.book.id }}</li>
+                                <li class="mb-2"><strong>Tên sách:</strong> {{ b.book.title }}</li>
+                                <li class="mb-2"><strong>Tác giả:</strong> {{ b.book.author }}</li>
+                                <li class="mb-2"><strong>Thể loại:</strong> {{ b.book.genre }}</li>
+                                <li class="mb-2">
+                                    <strong>Tình trạng sách:</strong> 
+                                    {% if b.return_date %}
+                                        <span class="badge bg-success">Đã trả</span>
+                                    {% elif b.is_overdue() %}
+                                        <span class="badge bg-danger">Quá hạn</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Đang mượn</span>
+                                    {% endif %}
+                                </li>
+                            </ul>
+
+                            <hr>
+
+                            <!-- 2.2. Thông tin người mượn -->
+                            <h6 class="text-primary fw-bold mb-3">Thông Tin Người Mượn</h6>
+                            <ul class="list-unstyled ms-3 mb-4">
+                                <li class="mb-2"><strong>Mã người dùng:</strong> {{ b.user.id }}</li>
+                                <li class="mb-2"><strong>Họ và Tên:</strong> {{ b.user.full_name if b.user.full_name else b.user.username }}</li>
+                                <li class="mb-2"><strong>Email:</strong> {{ b.user.email }}</li>
+                                <li class="mb-2"><strong>Số Điện Thoại:</strong> <em class="text-muted">(Chưa cập nhật)</em></li>
+                                <li class="mb-2"><strong>Địa Chỉ:</strong> {{ b.user.address if b.user.address else 'Chưa cập nhật' }}</li>
+                            </ul>
+
+                            <hr>
+
+                            <!-- 2.3. Thông tin mượn trả -->
+                            <h6 class="text-primary fw-bold mb-3">Thông Tin Mượn Trả</h6>
+                            <ul class="list-unstyled ms-3">
+                                <li class="mb-2"><strong>Ngày mượn:</strong> {{ b.borrow_date.strftime('%d/%m/%Y') }}</li>
+                                <li class="mb-2"><strong>Ngày trả hạn:</strong> {{ b.due_date.strftime('%d/%m/%Y') }}</li>
+                                <li class="mb-2">
+                                    <strong>Ngày trả thực tế:</strong> 
+                                    {% if b.return_date %}
+                                        {{ b.return_date.strftime('%d/%m/%Y') }}
+                                    {% else %}
+                                        <span class="text-warning">Sách chưa được trả</span>
+                                    {% endif %}
+                                </li>
+                                <!--Thay thế-->
+                                <li class="mb-2">
+                                    <strong>Số ngày trễ hạn:</strong> 
+                                    {% if b.return_date %}
+                                        {% set days_diff = (b.return_date - b.due_date).days %}
+                                        {% if days_diff > 0 %}
+                                            {{ days_diff }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    {% else %}
+                                        {% if b.is_overdue() %}
+                                            {{ b.get_days_overdue() }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    {% endif %}
+                                </li>
+                                <li class="mb-2">
+                                    <strong>Phí phạt:</strong> 
+                                    {% if b.is_overdue() %}
+                                        <span class="text-danger fw-bold">{{ (b.calculate_fine() / 1000)|int }}.000 VNĐ</span>
+                                    {% else %}
+                                        <span class="text-success">0 VNĐ</span>
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+    <!--Nếu là user đăng nhập thì hiển thị "Bạn chưa mượn sách nào." nếu admin đăng nhập thì hiển thị "Chưa có bản ghi mượn nào." -->
+    {% if request.args.get('search') %}
+        <div class="alert alert-warning">Không tìm thấy sách nào khớp với từ khóa tìm kiếm.</div>
+    {% elif current_user.role == 'user' %}
+        <div class="alert alert-info">Bạn chưa mượn sách nào.</div>
+    {% elif current_user.role == 'admin' %}
+        <div class="alert alert-info">Chưa có bản ghi mượn nào.</div>
+    {% endif %}
+{% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,13 @@
+<!--Thư mục file đảm nhận vai trò đặt trước sách-->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Đặt trước sách</h2>
+<p>Bạn đang đặt trước: <strong>{{ book.title }}</strong></p>
+<p>Hiện tại sách đang được mượn hết. Bạn sẽ được thông báo khi có bản trống.</p>
+
+<form method="POST">
+    <button type="submit" class="btn btn-success">Xác nhận đặt trước</button>
+    <a href="{{ url_for('books') }}" class="btn btn-secondary">Hủy</a>
+</form>
+{% endblock %}

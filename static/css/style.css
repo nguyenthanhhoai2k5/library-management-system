@@ -1,9 +1,242 @@
 body {
-    background-color: #f8f9fa;
+    background-color: #ffffff;
 }
 .navbar-brand {
     font-weight: bold;
 }
-.container {
-    max-width: 960px;
+
+/* Styles for borrows table action column */
+.actions-cell {
+    width: 180px; /* reserve space for buttons */
+    vertical-align: middle;
+}
+.actions-cell .btn {
+    min-width: 72px;
+}
+.actions-cell .btn + .btn {
+    margin-left: 6px;
+}
+@media (max-width: 576px) {
+    .actions-cell {
+        width: auto;
+    }
+    .actions-cell .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 6px;
+    }
+}
+/* --- App custom styles (hero, gallery, sidebar, footer) --- */
+
+/* Topbar/nav removed - navbar styles deleted per request */
+
+/* Layout */
+.app-layout {
+    height: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+.app-layout img {
+    border: 2px solid hsl(0, 0%, 0%);
+    /*Bo tròn ảnh*/
+    border-radius: 50%;
+}
+.sidebar {
+    width: 220px;
+    background: linear-gradient(180deg,#1C3779,#1C3779);
+    padding: 18px 12px;
+    min-height: calc(100vh - 80px);
+    box-shadow: 2px 0 6px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+}
+.content {
+    flex: 1 1 auto;
+}
+
+/* Hero */ 
+.body-index {
+    background-color: #ebebeb; border: 2px solid #838383; border-radius: 5px; padding: 30px;
+}
+.body-index .grid img {  
+    border: 1px solid #ffffff;
+    border-radius: 5px;   /*độ cong của khung ảnh*/
+}
+.hero { background: #ebebeb; color: #000000; padding: 50px; margin-bottom: 18px; }
+.hero-title h1 {
+    margin-bottom: 50px;
+}
+.hero-logo img { height: 64px; }
+.hero-title { text-align: center; margin-top: 8px; }
+.hero-title h1 { font-family: cursive, 'Segoe UI', Arial; font-size: 48px; margin: 6px 0; }
+.sub { background: #23CED4; display: inline-block; padding: 6px 12px; border-radius: 4px; color:#fff; margin-top:6px; width: 100%; }  
+
+/* Gallery (ảnh trên trang index) */
+.gallery .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 16px; }
+.gallery .grid img { width: 100%; height: 250px; object-fit: cover; border-radius: 5px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.25);}
+
+.intro.card { background: #fff; padding: 20px; border-radius: 10px; color: #000000; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+
+/* Footer */
+.index-footer { background: #1C3779; color: #fff; padding: 30px; border-radius: 6px; margin-top: 18px; }
+.index-footer .footer-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.index-footer .footer-address { margin-bottom: 8px; }
+.index-footer .footer-social img {height: 40px; height: 40px;  justify-content: center; align-items: center; border: 2px solid #ffffff; border-radius: 50px;}
+
+/* Sidebar */
+.sidebar-logo img { width: 80%; border-radius: 10px; display:block; margin: 6px auto 12px; border: 2px solid #ffffff; }
+.sidebar-nav { display:flex; flex-direction:column; gap: 10px; margin-top: 6px; }
+.btn-aside { display:flex; align-items:center; gap: 10px; padding: 12px; background: #264f78; color: #fff; border-radius: 8px; text-decoration: none; }
+.btn-aside img { width: 28px; height: 28px; object-fit: contain; }
+.sidebar-footer { margin-top: auto; display:flex; flex-direction:column; gap:8px; }
+.btn-exit { background: #d33; color:#fff; padding:10px; border-radius:8px; text-align:center; text-decoration:none; display:block; }
+.btn-admin { background: #fff; color:#000; padding:10px; border-radius:8px; text-align:center; text-decoration:none; display:block; }
+
+/* Books List styles */
+.books-header {
+    background: #ebebeb; 
+    color: #000000;
+    padding: 25px;
+    margin-bottom: 24px;
+}
+.dashboard {
+    background: #ebebeb; 
+    border: 2px solid #838383;
+    border-radius: 5px;
+    padding: 10px;
+
+}
+/* Chỉnh danh sách sách */
+.books-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    padding: 10px;
+
+}
+.books-title h1 {  
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 36px;
+    margin: 0;
+    padding: 10px;
+    background-color: #8df7cc; 
+    width: 100%;
+    border: 2px solid #ffffff;
+    border-radius: 5px;
+}
+.books-title .btn-success {
+    background: #23CED4;
+    border: none;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+.title-table {
+    background-color: #8df7cc;
+    padding: 5px;
+    border: 2px solid #ffffff;
+    font-family: 'Times New Roman', Times, serif;
+    border-radius: 5px;
+    margin-bottom: 15px; 
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .gallery .grid { grid-template-columns: repeat(2, 1fr); }
+    .content { margin-left: 0; }
+    .sidebar { position: relative; width: 100%; min-height: auto; }
+    .app-layout { flex-direction: column; }
+    .hero-title h1 { font-size: 36px; }
+    
+    .books-title {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+}
+
+/*Thể nav*/
+/* 1. Thiết lập cho thanh điều hướng tổng thể */
+/* 1. Thiết lập cho thanh điều hướng tổng thể (Thay thế class .nav cũ bằng .site-nav mới) */
+.site-nav {
+    /* Độ rộng 100% được cung cấp bởi .container-fluid trong HTML, 
+       nhưng ta vẫn đặt màu nền theo yêu cầu. */
+    background-color: #CE3030; /* Nền class="nav" là #CE3030 */
+    /* Thêm padding dọc để thanh nav trông đẹp hơn */
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* Đảm bảo chữ logo (Starfield Library) có màu trắng để dễ nhìn trên nền đỏ */
+.site-nav .brand strong {
+    color: white;
+}
+
+/* Đảm bảo tất cả các liên kết có màu trắng để dễ nhìn trên nền đỏ */
+.site-nav .nav-links a {
+    color: white;
+}
+
+/* 2. Thiết lập cho các nút Đăng nhập/Đăng ký khi CHƯA ĐĂNG NHẬP */
+/* Các nút này là các thẻ <a> cuối cùng trong div.nav-links khi user chưa đăng nhập. */
+
+/* Áp dụng kiểu dáng chung cho các nút (Bo góc 2px màu trắng) */
+.site-nav .nav-links a:last-child, 
+.site-nav .nav-links a:nth-last-child(2) {
+    /* Đặt style nút chỉ áp dụng khi người dùng CHƯA đăng nhập.
+       Khi người dùng ĐÃ đăng nhập, các nút Đăng nhập/Đăng ký không hiển thị. */
+    
+    /* Thiết lập kiểu nút chung cho các nút Đăng nhập/Đăng ký chưa đăng nhập */
+    padding: 8px 15px; /* Thêm padding bên trong nút */
+    border-radius: 2px; /* Bo góc 2px */
+    border: 1px solid white; /* Đường viền bo góc 2px màu trắng */
+    font-weight: bold;
+    color: black !important; /* Đặt màu chữ là black (Yêu cầu 5 & 6) */
+}
+
+
+/* Nút Đăng nhập (Yêu cầu 5: color: black, nền #35F03B) 
+   Đây là thẻ <a> đứng thứ 2 tính từ cuối (khi user chưa đăng nhập) */
+.site-nav .nav-links a:nth-last-child(2) {
+    background-color: #35F03B; 
+    border: 2px solid white;  
+    border-radius: 7px;
+}
+
+
+/* Nút Đăng ký (Yêu cầu 6: nền màu: #00C3E5)
+   Đây là thẻ <a> cuối cùng (khi user chưa đăng nhập) */
+.site-nav .nav-links a:last-child {
+    background-color: #00C3E5; 
+    border: 2px solid white;  
+    border-radius: 7px;
+}
+
+/* Yêu cầu 5: Khoảng cách giữa Đăng ký và Đăng nhập là 20px
+   Bootstrap class 'gap-3' đã cung cấp khoảng cách (~1rem), 
+   nhưng để chính xác 20px, ta có thể ghi đè bằng margin nếu cần.
+   Tuy nhiên, dùng 'gap-3' là tốt nhất theo tinh thần Bootstrap. 
+   Nếu muốn chính xác 20px: */
+.site-nav .nav-links a:nth-last-child(2) {
+    /* Thêm margin-right 20px cho nút Đăng nhập để đẩy nút Đăng ký ra xa */
+    margin-right: 20px; /* Khoảng cách Đăng ký 20px */
+}
+
+/* Tùy chỉnh cho ảnh đại diện khi ĐÃ đăng nhập */
+.site-nav .nav-links img.rounded-circle {
+    /* Đảm bảo hình ảnh đại diện có viền để phân biệt rõ hơn */
+    border: 1px solid white; 
+}
+.me-2{
+    border: 2px solid white;
+    border-radius: 10px;
+}
+.nav-item a {
+    color: black; 
+    font-weight: bold;
+    
+}
+.nav-item a:hover { 
+    color: rgb(0, 17, 255);
 }

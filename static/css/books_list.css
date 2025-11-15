@@ -1,0 +1,78 @@
+/* == books_list.css: Dành riêng cho trang list.html và các modal liên quan == */
+
+/* --- 1. Sửa lỗi Thông tin chi tiết sách (image_41aca8.png) --- */
+
+/* Đảm bảo các thẻ p trong phần thông tin sách hiển thị đúng */
+/* Thêm margin dưới cho p để tách các dòng */
+.modal-body .col-md-8 p {
+    margin-bottom: 0.5rem; /* Giúp tách dòng thông tin */
+    line-height: 1.5;      /* Khoảng cách dòng chuẩn */
+    display: block;        /* Đảm bảo là block element */
+}
+
+/* Đảm bảo Mô tả sách có đủ khoảng cách trên */
+.modal-body .col-md-8 p strong {
+    font-weight: 700; /* Đảm bảo in đậm */
+}
+
+/* Đảm bảo ảnh bìa có khoảng cách dưới trên mobile */
+.modal-body .col-md-4 img {
+    margin-bottom: 1rem;
+}
+
+/* --- 2. Sửa lỗi Modal Quy Định Mượn Sách (image_41b7a8.png) --- */
+
+/* Căn chỉnh các trường form trong modal mượn sách */
+/* Sử dụng mb-3 (margin-bottom: 1rem) cho row */
+.modal-body .row.mb-3 {
+    margin-bottom: 1rem !important;
+}
+
+/* Đảm bảo label và input hiển thị đúng trong các cột */
+.modal-body .col-md-6 label,
+.modal-body .col-md-4 label {
+    margin-bottom: 0.25rem; /* Khoảng cách nhỏ giữa nhãn và input */
+    font-weight: 600;
+}
+
+/* Sửa lỗi hiển thị trường Ngày Trả (nếu có) */
+/* Căn chỉnh cho input date (tránh lỗi hiển thị trong row) */
+.date-input-group {
+    display: flex;
+    align-items: center;
+}
+.date-input-group input[type="date"] {
+    flex-grow: 1; /* Cho phép input date chiếm phần còn lại của không gian */
+}
+
+/* --- 3. Sửa lỗi Modal Xác nhận Xóa (image_420aa2.png) --- */
+
+/* Đảm bảo nội dung modal body không bị ẩn */
+.modal-content .modal-body {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    color: #212529; /* Đảm bảo màu chữ hiển thị rõ */
+    font-size: 1.05rem;
+}
+
+/* Căn chỉnh lại footer cho nút Xóa/Hủy */
+.modal-footer form {
+    /* Đảm bảo form chỉ chiếm không gian cần thiết, tránh lỗi display: inline */
+    display: inline-block;
+    margin-left: 0.5rem; /* Tách nút Xóa khỏi nút Hủy */
+}
+
+/* --- 4. Cải tiến chung cho trang List (list.html) --- */
+/* Căn chỉnh tiêu đề và nút Thêm sách */
+.books-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Tiêu đề Danh sách sách */
+.books-header h1 {
+    font-size: 2rem;
+    margin: 0;
+}

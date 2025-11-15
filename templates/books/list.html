@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form, render_field %}
+
+<!--Nhúng css của books_list.css-->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/books_list.css') }}">
+
+{% block content %}
+<!-- Books list header (chức năng thêm sách mới) -->
+<div class="dashboard">
+    <div class="books-title">
+        <h1>Danh Sách Sách</h1>
+    </div>
+    <!--Thẻ nút ngang-->
+    <hr>
+    <div class="books-header">
+        {% if current_user.role == 'admin' %}
+            <!--Thêm hình ảnh img/logo_add.jpg-->
+            <a href="{{ url_for('add_book') }}" class="btn btn-success" style="border: 2px solid white;">
+                <i class="bi bi-plus"><img src="{{ url_for('static', filename='img/logo_add.jpg') }}" alt="Add Book" style="width: 35px; height:35px;"></i> Thêm sách mới
+            </a>
+        {% endif %}
+
+        <!-- Tìm kiếm sách -->
+        <form method="GET" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    {{ render_field(form.search, class="form-control", placeholder="Tìm tên sách...") }}
+                </div>
+                <div class="col-md-3">
+                    {{ render_field(form.author, class="form-control", placeholder="Tác giả...") }}
+                </div>
+                <div class="col-md-3">
+                    {{ render_field(form.genre, class="form-control", placeholder="Thể loại...") }}
+                </div>
+                <div class="col-md-2">
+                    <!--Thêm hình ảnh img/logo_search.jpg-->
+                    <button type="submit" class="btn btn-primary w-100"><img src="{{ url_for('static', filename='img/logo-search.jpg') }}" alt="Search" style="width: 35px; height:35px; margin-right: 10px;"> Tìm kiếm</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Danh sách sách -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên sách</th>
+                        <th>Tác giả</th>
+                        <th>Thể loại</th>
+                        <th>Còn lại</th>
+                        {% if current_user.role == 'admin' %} <!--Hành đông sửa, xóa chỉ có admin mới làm được-->
+                        <th>Hành động</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--Vòng lập đếm số dòng-->
+                    {% for book in books.items %}
+                    <!---Thay <tr>-->
+                    <!-- SỬA DÒNG <tr> THÀNH CLICKABLE -->
+                    <tr data-bs-toggle="modal" data-bs-target="#bookModal{{ book.id }}" style="cursor: pointer;">
+                        <td>{{ loop.index + (books.page - 1) * books.per_page }}</td>
+                        <!-- Thay hình ảnh bìa sách -->
+                        <td>
+                            {% if book.cover_image %}
+                                <img src="{{ url_for('static', filename=book.cover_image) }}" 
+                                    width="40" height="40" class="me-2 rounded object-fit-cover" 
+                                    alt="{{ book.title }}"
+                                    onerror="console.log('Image failed to load: {{ book.cover_image }}')">
+                                <strong>{{ book.title }}</strong>
+                            {% else %}
+                                <div class="bg-light border rounded d-inline-block me-2" style="width:40px;height:40px;"></div>
+                                <strong>{{ book.title }}</strong>
+                            {% endif %}
+                        </td>
+                        <td>{{ book.author }}</td> <!--Tên tác giả -->
+                        <td>{{ book.genre or '-' }}</td>
+                        <td>
+                            <span class="badge {% if book.available_copies > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ book.available_copies }}
+                            </span>
+                        </td>
+                        {% if current_user.role == 'admin' %}
+                        <td>
+                            <a href="{{ url_for('edit_book', id=book.id) }}" class="btn btn-sm btn-warning" style="border: 1px solid black;">Sửa</a> <!--Chỉnh sửa sách chỉ admin mới làm được-->
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ book.id }}" style="border: 1px solid black;">Xóa</button>
+                        </td>
+                        {% endif %}
+                    </tr>
+
+                    {# Modals removed from here to keep the table structure valid. Modals will be rendered after the table. #}
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Không có sách nào.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Render per-book modals outside the table to keep HTML valid -->
+        {% for book in books.items %}
+            {% set modal_book = book %}
+            {% include 'books/detail_modal.html' %}
+
+            {% if current_user.role == 'admin' %}
+            <!-- Modal Xóa -->
+            <div class="modal fade" id="deleteModal{{ book.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 style="color: black;">Xác nhận xóa</h5> <!--class="modal-title"-->
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            Bạn có chắc muốn xóa sách <strong style="color: red;">"{{ book.title }}"</strong>?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <form action="{{ url_for('delete_book', id=book.id) }}" method="POST" style="display:inline">
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Phân trang hiển thị -->
+        {% if books.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if books.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('books', page=books.prev_num) }}">Trước</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">Trước</span></li>
+                {% endif %}
+
+                {% for page_num in books.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != books.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('books', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if books.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('books', page=books.next_num) }}">Sau</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">Sau</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

@@ -8,35 +8,156 @@
     {% from 'bootstrap5/nav.html' import render_nav_item %}
     {{ bootstrap.load_css() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!--Thêm <style>-->
+    <style>
+        /* Định nghĩa chiều cao cố định cho Header và Footer */
+        :root {
+            --header-height: 67px;
+            --footer-height: 67px;
+            --sidebar-width: 220px;
+            /* Thêm padding cho nội dung để nó không chạm vào Footer */
+            --content-bottom-padding: 30px; 
+        }
+
+        /* 1. Thiết lập lại Body: Đặt Body là container chính của Fixed Layout */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden; /* Ngăn Body cuộn. Chỉ khu vực nội dung chính mới cuộn */
+        }
+
+        /* 2. Cố định Header (app-layout-80 đầu tiên) */
+        .app-layout-80:first-child {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            z-index: 1030;
+            margin-bottom: 0 !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .app-layout-80 h2 {
+            margin: 0;
+        }
+
+        /* 3. Cố định Footer (app-layout-80 cuối cùng) */
+        .app-layout-80:last-child {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--footer-height);
+            z-index: 1030;
+            margin-top: 0 !important;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* 4. Layout chính (Menu + Nội dung) */
+        .app-layout {
+            display: flex;
+            /* Chiều cao = 100vh - Chiều cao Header - Chiều cao Footer */
+            height: calc(100vh - var(--header-height) - var(--footer-height));
+            /* Đặt vị trí của khu vực làm việc (ngay dưới Header) */
+            margin-top: var(--header-height) !important; 
+            margin-bottom: 0 !important;
+            position: relative;
+            gap: 20px;
+        }
+
+        /* 5. Cố định Menu (Sidebar) */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100%; 
+            min-height: 100%;
+            overflow-y: auto; 
+        }
+
+        /* 6. Nội dung chính - Main Content (KHU VỰC CUỘN) */
+        .content {
+            flex: 1; 
+            height: 100%; 
+            overflow-y: auto; /* CHỈ KHU VỰC NÀY CUỘN */
+            
+            /* FIX LỖI ĐÈ LÊN FOOTER: Thêm padding dưới */
+            /* Tôi đã thêm padding-bottom bằng với chiều cao của footer (67px) + khoảng trống mong muốn (30px) */
+            padding-top: 20px; 
+            padding-bottom: calc(var(--footer-height) + var(--content-bottom-padding)); /* Đảm bảo nội dung dừng lại trên footer */
+        }
+        
+        /* Điều chỉnh lại style.css cho content.container mt-4 nếu có margin-top 4 */
+        .content.container.mt-4 {
+            margin-top: 0 !important; /* Đảm bảo không có margin-top thừa đẩy nội dung xuống */
+        }
+    </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Thư viện</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    {{ render_nav_item('index', 'Trang chủ') }}
-                    {% if current_user.is_authenticated %}
-                        {% if current_user.role == 'admin' %}
-                            {{ render_nav_item('index', 'Quản lý Sách') }} {# Placeholder #}
-                            {{ render_nav_item('index', 'Quản lý Người dùng') }} {# Placeholder #}
-                        {% endif %}
-                        {{ render_nav_item('logout', 'Đăng xuất') }}
-                    {% else %}
-                        {{ render_nav_item('login', 'Đăng nhập') }}
-                        {{ render_nav_item('register', 'Đăng ký') }}
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <div class="container mt-4">
-        {{ render_messages() }}
-        {% block content %}{% endblock %}
+<!--Phần này là menu cho toàn bộ thư viện khi đăng nhâp vào hệ thống, menu chiến 20% của trang-->
+<body style="font-family: 'Times New Roman', Times, serif;"> 
+    {# Navbar removed as requested. Header/navigation markup has been deleted. #}
+    <!-- Application layout: optional sidebar when logged in -->
+    {% if current_user.is_authenticated %}
+    <div class="app-layout-80" style="margin-bottom: 0%;border: 2px solid hsl(0, 0%, 22%); background: #CE3030;"> <!--Hiển thị 80% chiều rộng còn lại của trang-->
+        <!--Chuyển sang tiếng Anh-->
+        <h2 style="background: #CE3030; color: white; padding: 10px; padding: 5px">Smart Library Management Software</h2>
+        <!--Hiển thị các nội dung của trang ở các nút trong class="app-layout"-->
     </div>
+    {% endif %}
+    <div class="app-layout" style="margin-top: 0%;"> <!--Menu chiếm 20% chiều rộng, logo-thư viện đến index, các nút home ==> index.html; Danh sách sách ==> books.html; Sách đang mượn ==> my_borrows.html; Dashboard Quản Trị ==> admin_dashboard.html; Sách Quá Hạn ==> admin_overdue.html, có phần quyển admin và user-->
+        {% if current_user.is_authenticated %}
+            <aside class="sidebar">
+                <!--Logo về index.html-->
+                <a href="{{ url_for('index') }}">
+                <div class="sidebar-logo">
+                    <img src="{{ url_for('static', filename='img/logo-library.png') }}" alt="logo" width="120" height="120">
+                </div>
+                </a>
+                <nav class="sidebar-nav" style="text-align: center;">
+                    <!--Home thay button bằng a-->
+                    <!--Kích thước ảnh 50px * 50px-->
+
+                    <a class="btn btn-aside" href="{{ url_for('index') }}" style="background-color: #ffffff; border: 2px solid rgb(0, 0, 0);color: #656565; font-size: 20px; font-weight: bolder;"><img src="{{ url_for('static', filename='img/logo-home.png') }}" alt="" width="50" height="50"> Home</a>
+                    <a class="btn btn-aside" href="{{ url_for('books') }}" style="background-color: #ffffff; border: 2px solid rgb(0, 0, 0);color: #656565; font-size: 20px; font-weight: bolder;"><img src="{{ url_for('static', filename='img/danh-sach-sach.jpg') }}" alt=""> List of books</a>
+                    {% if current_user.role == 'user' %}
+                    
+                        <a class="btn btn-aside" href="{{ url_for('my_borrows') }}" style="background-color: #ffffff; border: 2px solid rgb(0, 0, 0);color: #656565; font-size: 20px; font-weight: bolder;"><img src="{{ url_for('static', filename='img/Dashboard-Quan-tri.jpg') }}" alt=""> Books on loan</a>
+                    {% endif %}
+                    {% if current_user.role == 'admin' %}
+                    
+                        <a class="btn btn-aside" href="{{ url_for('admin_dashboard') }}" style="background-color: #ffffff; border: 2px solid rgb(0, 0, 0);color: #656565; font-size: 20px; font-weight: bolder;"><img src="{{ url_for('static', filename='img/Dashboard-Quan-tri.jpg') }}" alt=""> Admin Dashboard</a>
+                        <a class="btn btn-aside" href="{{ url_for('admin_overdue') }}" style="background-color: #ffffff; border: 2px solid rgb(0, 0, 0);color: #656565; font-size: 20px; font-weight: bolder;"><img src="{{ url_for('static', filename='img/sach-qua-han.png') }}" alt=""> Overdue Books</a>
+                    {% endif %}
+                </nav>
+                <div class="sidebar-footer">
+                    <!--Logo exit tại img/logout.jpg trước tên exit -->
+                    <a class="btn btn-exit" href="{{ url_for('logout') }}" style="border: 2px solid rgb(255, 255, 255);"><img src="{{ url_for('static', filename='img/logout.jpg') }}" alt="Logout" width="30" height="30" class="rounded-circle me-1">Exit</a>
+                    <!--Sửa lại class="btn btn-admin thành dẫn đến trang "profile" của tài khoản đang đăng nhập, phải có avatar và username khi click vào dẫn đến trang "profile" -->
+                    <a class="btn btn-admin" href="{{ url_for('profile') }}" style="border: 2px solid rgb(255, 255, 255);" >
+                        <!--Thay thế avatar mặt định, nếu user đăng nhập hiển thị img/logo_user.png, nếu admin đăng nhâp hiển thị logo_admin.jpg-->
+                        {% if current_user.role == 'admin' %}
+                            <img src="{{ url_for('static', filename='img/logo_admin.jpg') }}" alt="Admin Avatar" width="50" height="50" class="rounded-circle me-1">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='img/logo_user.png') }}" alt="User Avatar" width="50" height="50" class="rounded-circle me-1">
+                        {% endif %}
+                        {{ current_user.username }}
+                    </a>
+                </div>
+            </aside>
+        {% endif %}
+
+        <main class="content container mt-4">
+            {{ render_messages() }}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% if current_user.is_authenticated %}
+    <div class="app-layout-80" style="margin-bottom: 0%; border: 2px solid hsl(0, 0%, 22%);"> <!--Hiển thị 80% chiều rộng còn lại của trang (Thêm img/logo-library.png vào trước tên thư viện , logo về trang index.html) (Chuyển nội dung thành Tiếng anh)-->
+        <h3 style="background: #CE3030; padding: 10px; padding: 5px; font-weight: normal; font-family: 'Times New Roman', Times, serif; text-align: center;color: #ffffff;"><a href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='img/logo-library.png') }}" alt="Library Logo" width="50" height="50" class="me-2"></a> Starfield Library | B1 Floor, Starfield COEX Mall, 524, Bongeunsa-ro, Gangnam-gu, Seoul, South Korea</h3>
+        <!--Hiển thị các nội dung của trang ở các nút trong class="app-layout"-->
+    </div>
+    {% endif %}
+    <!--Làm footer cuối trang-->
     {{ bootstrap.load_js() }}
 </body>
 </html>

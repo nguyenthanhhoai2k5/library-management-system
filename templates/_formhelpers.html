@@ -1,0 +1,13 @@
+{% macro render_field(field) %}
+  <div class="mb-3">
+    {% if field.type != 'SubmitField' %}
+      {{ field.label(class="form-label") }}
+    {% endif %}
+    {{ field(class="form-control " + kwargs.pop('class', ''), **kwargs)|safe }}
+    {% if field.errors %}
+      {% for error in field.errors %}
+        <div class="alert alert-danger">{{ error }}</div>
+      {% endfor %}
+    {% endif %}
+  </div>
+{% endmacro %}

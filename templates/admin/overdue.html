@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="title-table">
+        <h1 style="font-weight: normal">Sách Quá Hạn (Admin)</h1>
+    </div>
+    <hr>
+    {% if overdue %}
+    <table class="table table-danger">
+        <thead>
+            <tr>
+                <th>Người mượn</th>
+                <th>Sách</th>
+                <th>Hạn trả</th>
+                <th>Quá hạn (ngày)</th>
+                <th>Phạt dự kiến</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in overdue %}
+                <tr>
+                    <td>{{ b.user.username }}</td>
+                    <td>{{ b.book.title }}</td>
+                    <td>{{ b.due_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ (datetime.utcnow() - b.due_date).days }}</td>
+                    <td>{{ (b.calculate_fine() / 1000)|int }}.000 VNĐ</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-success">Không có sách nào quá hạn!</div>
+    {% endif %}
+</div>
+{% endblock %}

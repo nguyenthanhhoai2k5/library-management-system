@@ -1,0 +1,33 @@
+{#
+  Reusable navigation fragment for the app.
+
+  Usage options:
+  - Include and render immediately: {% include 'nav.html' %}
+  - Import the macro and call it explicitly: {% from 'nav.html' import render_nav %} {{ render_nav(current_user) }}
+
+  The fragment expects `current_user` to be available in the template context.
+#}
+
+{% macro render_nav(user=None, page=None) -%}
+    {# Chỉ hiển thị nav ở các trang công khai (index, login, register) khi chưa đăng nhập #}
+    {% set public_pages = ['index', 'login', 'register'] %}
+    {% if page in public_pages and (not user or not user.is_authenticated) %}
+    <nav class="site-nav container-fluid">
+        <div class="d-flex align-items-center justify-content-between">
+            <a class="brand d-flex align-items-center text-decoration-none" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='img/logo-library.png') }}" alt="Library Logo" width="48" height="48" class="me-2">
+                <strong class="m-0">Starfield Library</strong>
+            </a>
+            <div class="nav-links d-flex align-items-center gap-3">
+                <a class="text-decoration-none" href="{{ url_for('login') }}">Đăng nhập</a>
+                <a class="text-decoration-none" href="{{ url_for('register') }}">Đăng ký</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+{%- endmacro %}
+
+{# Khi include trực tiếp, render nav trên các trang công khai nếu chưa đăng nhập #}
+{% if request.endpoint in ['index', 'login', 'register'] %}
+    {{ render_nav(current_user, request.endpoint) }}
+{% endif %}
