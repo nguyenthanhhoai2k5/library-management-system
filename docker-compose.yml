@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build: .
+    container_name: library_app_container
+    ports:
+      - "5000:5000"
+    volumes:
+      # 1. Đồng bộ code để dev (sửa code trên máy -> docker tự cập nhật nếu có auto-reload)
+      - .:/app
+      
+      # 2. QUAN TRỌNG: Giữ dữ liệu Database (SQLite)
+      # Map thư mục 'instance' ở ngoài vào trong container
+      - ./instance:/app/instance
+
+      # 3. QUAN TRỌNG: Giữ file upload (Ảnh bìa sách, avatar...)
+      # Nếu code bạn lưu ảnh vào 'app/static/uploads', hãy map nó ra ngoài
+      - ./app/static/uploads:/app/app/static/uploads
+      
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_DEBUG=1  # Bật chế độ debug

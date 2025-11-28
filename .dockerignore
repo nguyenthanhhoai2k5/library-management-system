@@ -1,0 +1,13 @@
+# Bỏ qua các thư mục và tệp không cần thiết
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.vscode
+.idea
+
+# Bỏ qua thư mục môi trường ảo Python
+venv/
+env/

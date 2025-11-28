@@ -119,9 +119,9 @@
 
                     <a class="btn btn-aside" href="{{ url_for('index') }}" style="background-color: #ffffff; border: 2px solid rgb(0, 0, 0);color: #656565; font-size: 20px; font-weight: bolder;"><img src="{{ url_for('static', filename='img/logo-home.png') }}" alt="" width="50" height="50"> Home</a>
                     <a class="btn btn-aside" href="{{ url_for('books') }}" style="background-color: #ffffff; border: 2px solid rgb(0, 0, 0);color: #656565; font-size: 20px; font-weight: bolder;"><img src="{{ url_for('static', filename='img/danh-sach-sach.jpg') }}" alt=""> List of books</a>
+                    <!--Sửa lại sách quá hạn của admin và user dùng chung hình ảnh tại img/sach-qua-han.png-->
                     {% if current_user.role == 'user' %}
-                    
-                        <a class="btn btn-aside" href="{{ url_for('my_borrows') }}" style="background-color: #ffffff; border: 2px solid rgb(0, 0, 0);color: #656565; font-size: 20px; font-weight: bolder;"><img src="{{ url_for('static', filename='img/Dashboard-Quan-tri.jpg') }}" alt=""> Books on loan</a>
+                        <a class="btn btn-aside" href="{{ url_for('my_borrows') }}" style="background-color: #ffffff; border: 2px solid rgb(0, 0, 0);color: #656565; font-size: 20px; font-weight: bolder;"><img src="{{ url_for('static', filename='img/sach-qua-han.png') }}" alt=""> Books on loan</a>
                     {% endif %}
                     {% if current_user.role == 'admin' %}
                     
